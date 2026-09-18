@@ -126,9 +126,9 @@ No analytics/telemetry exist in the current build (see Non-Goals) — these metr
 
 **Unit handling:** weight is always stored internally in kilograms regardless of the display unit, and converted to lb/kg only at render time. This avoids compounding rounding errors from repeated unit conversion and keeps historical comparisons accurate even if the user switches units between sessions.
 
-**Storage approach (current build):** browser local storage on the device, scoped to that browser only. This means: no login required, but also no recovery or sync if the browser data is cleared or the user switches devices/browsers.
+**Storage approach:** on-device app storage, scoped to that install only. This means: no login required, but also no recovery or sync if the app is deleted, its data is cleared, or the user switches devices.
 
-**Platform (current build):** a single self-contained web page, installable/usable like a lightweight phone app (add-to-home-screen), rather than a native iOS/Android build.
+**Platform:** a React Native app built with Expo (SDK 57) and TypeScript, targeting iOS and Android from a single codebase. Expo's web target is available for development but is not a primary platform.
 
 ## Design & Branding
 
@@ -156,7 +156,6 @@ No analytics/telemetry exist in the current build (see Non-Goals) — these metr
 - Rest timers between sets
 - Analytics/telemetry instrumentation (the success metrics above describe what to measure later, not what's tracked now)
 - Body-weight, measurements, or nutrition tracking
-- Native iOS/Android builds
 
 ## Open Questions & Future Considerations
 
