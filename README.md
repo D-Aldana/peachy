@@ -2,9 +2,9 @@
 
 A mobile-first workout logger for lifters who want to record sets, reps, and weight between sets without friction. Open the app, add an exercise by name, log sets as you go, and see whether you're trending up or down against your own history. No account, no setup, no coach.
 
-> **Status:** early scaffold. The app is currently the Expo blank template. See the [PRD](docs/PRD.md) for the planned MVP.
+> **Status:** MVP in progress. See the [PRD](docs/PRD.md) for scope.
 
-## Planned features
+## Features
 
 - **Fast logging:** start a workout, add exercises by free-text name, and log reps × weight with steppers
 - **Exercise memory:** previously used exercise names autocomplete, most recent first
@@ -17,6 +17,8 @@ A mobile-first workout logger for lifters who want to record sets, reps, and wei
 
 - [Expo](https://docs.expo.dev/versions/v57.0.0/) SDK 57
 - React Native 0.86 / React 19
+- [Expo Router](https://docs.expo.dev/router/introduction/) for navigation
+- `expo-sqlite/kv-store` for on-device persistence
 - TypeScript
 
 ## Getting started
@@ -37,11 +39,13 @@ npm run web
 ## Project structure
 
 ```
-App.tsx       Root component
-index.ts      Entry point
-app.json      Expo config
-assets/       Icons and splash images
-docs/PRD.md   Product requirements
+src/app/          Screens (Expo Router): home, active workout, weekly summary
+src/components/   Shared UI: buttons, steppers, trend badges, exercise card
+src/lib/          State reducer, local persistence, progress and weekly logic
+src/theme.ts      Colors, fonts, and badge styles
+app.json          Expo config
+assets/           Icons and splash images
+docs/PRD.md       Product requirements
 ```
 
 ## License
