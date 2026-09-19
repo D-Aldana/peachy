@@ -1,4 +1,4 @@
-import { bestSet, compareSets, previousSession, volume } from './progress';
+import { bestSet, compareSets, previousSession } from './progress';
 import type { Trend, Workout, WorkoutSet } from './types';
 
 /** Local Monday 00:00 of the week containing `date`. */
@@ -21,7 +21,8 @@ export type WeekSummary = {
   end: Date;
   workoutCount: number;
   totalSets: number;
-  totalVolumeKg: number;
+  /** Consecutive weeks with at least one finished workout. */
+  streak: number;
   /** Monday-first; true where a workout was finished that day. */
   days: boolean[];
   exercises: ExerciseWeekSummary[];
@@ -38,13 +39,11 @@ export function summarizeWeek(workouts: Workout[], now = new Date()): WeekSummar
 
   const byName = new Map<string, { name: string; sets: WorkoutSet[]; latest: WorkoutSet[] }>();
   let totalSets = 0;
-  let totalVolumeKg = 0;
 
   for (const workout of inWeek) {
     for (const entry of workout.exercises) {
       if (entry.sets.length === 0) continue;
       totalSets += entry.sets.length;
-      totalVolumeKg += volume(entry.sets);
 
       const key = entry.name.trim().toLowerCase();
       const existing = byName.get(key);
@@ -71,5 +70,20 @@ export function summarizeWeek(workouts: Workout[], now = new Date()): WeekSummar
   const days = Array.from({ length: 7 }, () => false);
   for (const workout of inWeek) days[(new Date(workout.endedAt!).getDay() + 6) % 7] = true;
 
-  return { start, end, workoutCount: inWeek.length, totalSets, totalVolumeKg, days, exercises };
+  return { start, end, workoutCount: inWeek.length, totalSets, streak: weekStreak(workouts, now), days, exercises };
+}
+
+export function weekStreak(workouts: Workout[], now = new Date()): number {
+  const trained = new Set(
+    workouts.filter((w) => w.endedAt !== null).map((w) => startOfWeek(new Date(w.endedAt!)).getTime()),
+  );
+  const cursor = startOfWeek(now);
+  // This week only breaks the streak once it's over.
+  if (!trained.has(cursor.getTime())) cursor.setDate(cursor.getDate() - 7);
+  let streak = 0;
+  while (trained.has(cursor.getTime())) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 7);
+  }
+  return streak;
 }

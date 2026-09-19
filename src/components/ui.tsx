@@ -96,6 +96,10 @@ export function UnitToggle() {
   );
 }
 
+export function StreakStat({ weeks }: { weeks: number }) {
+  return <Stat label="streak" value={`${weeks} ${weeks === 1 ? 'wk' : 'wks'}`} />;
+}
+
 export function Stat({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.stat}>

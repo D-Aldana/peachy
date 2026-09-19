@@ -3,9 +3,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Peach } from '../components/Icon';
-import { Button, Stat, UnitToggle, WeekPeaches } from '../components/ui';
+import { Button, Stat, StreakStat, UnitToggle, WeekPeaches } from '../components/ui';
 import { newId, useActiveWorkout, useStore } from '../lib/store';
-import { formatNumber, fromKg } from '../lib/units';
 import { summarizeWeek } from '../lib/week';
 import { colors, fonts } from '../theme';
 
@@ -60,10 +59,7 @@ export default function Home() {
           <View style={styles.stats}>
             <Stat label="workouts" value={String(week.workoutCount)} />
             <Stat label="sets" value={String(week.totalSets)} />
-            <Stat
-              label={`${state.unit} volume`}
-              value={formatNumber(fromKg(week.totalVolumeKg, state.unit), 0)}
-            />
+            <StreakStat weeks={week.streak} />
           </View>
         </Pressable>
 
