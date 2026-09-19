@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Stat, TrendBadge } from '../components/ui';
+import { Stat, TrendBadge, WeekPeaches } from '../components/ui';
 import { useStore } from '../lib/store';
 import { formatNumber, formatWeight, fromKg } from '../lib/units';
 import { summarizeWeek } from '../lib/week';
@@ -19,6 +19,8 @@ export default function Summary() {
       </Text>
 
       <View style={styles.card}>
+        <WeekPeaches days={week.days} />
+        <View style={styles.divider} />
         <View style={styles.stats}>
           <Stat label="workouts" value={String(week.workoutCount)} />
           <Stat label="sets" value={String(week.totalSets)} />
@@ -58,18 +60,23 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    padding: 16,
+    padding: 20,
     gap: 16,
   },
   range: {
-    fontFamily: fonts.bodyMedium,
+    fontFamily: fonts.bold,
     fontSize: 14,
     color: colors.textMuted,
   },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 20,
-    padding: 18,
+    borderRadius: 28,
+    padding: 20,
+    gap: 18,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.background,
   },
   stats: {
     flexDirection: 'row',
@@ -86,16 +93,16 @@ const styles = StyleSheet.create({
   },
   row: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    gap: 10,
+    borderRadius: 24,
+    padding: 18,
+    gap: 12,
   },
   rowHeader: {
     gap: 4,
   },
   name: {
-    fontFamily: fonts.serif,
-    fontSize: 20,
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.text,
   },
   meta: {

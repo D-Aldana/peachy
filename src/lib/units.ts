@@ -25,7 +25,3 @@ export function formatWeight(kg: number, unit: Unit): string {
 export function weightStep(unit: Unit): number {
   return unit === 'kg' ? 2.5 : 5;
 }
-
-export function defaultWeight(unit: Unit): number {
-  return unit === 'kg' ? 20 : 45;
-}

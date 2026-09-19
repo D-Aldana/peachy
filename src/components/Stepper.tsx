@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { colors, fonts } from '../theme';
+import { Icon, type IconName } from './Icon';
 
 type StepperProps = {
   label: string;
@@ -36,7 +37,7 @@ export function Stepper({ label, value, step, onChange, decimal }: StepperProps)
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <View style={styles.row}>
-        <StepButton symbol="−" accessibilityLabel={`Decrease ${label}`} onPress={() => bump(-step)} />
+        <StepButton icon="minus" accessibilityLabel={`Decrease ${label}`} onPress={() => bump(-step)} />
         <TextInput
           value={text}
           onChangeText={commit}
@@ -46,7 +47,7 @@ export function Stepper({ label, value, step, onChange, decimal }: StepperProps)
           accessibilityLabel={label}
           style={styles.input}
         />
-        <StepButton symbol="+" accessibilityLabel={`Increase ${label}`} onPress={() => bump(step)} />
+        <StepButton icon="plus" accessibilityLabel={`Increase ${label}`} onPress={() => bump(step)} />
       </View>
     </View>
   );
@@ -57,11 +58,11 @@ function display(value: number): string {
 }
 
 function StepButton({
-  symbol,
+  icon,
   accessibilityLabel,
   onPress,
 }: {
-  symbol: string;
+  icon: IconName;
   accessibilityLabel: string;
   onPress: () => void;
 }) {
@@ -70,9 +71,9 @@ function StepButton({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
-      style={({ pressed }) => [styles.stepButton, pressed && { backgroundColor: colors.border }]}
+      style={({ pressed }) => [styles.stepButton, pressed && { backgroundColor: colors.surfaceRaised }]}
     >
-      <Text style={styles.stepSymbol}>{symbol}</Text>
+      <Icon name={icon} size={22} color={colors.accentPressed} />
     </Pressable>
   );
 }
@@ -83,35 +84,31 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   label: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
+    fontFamily: fonts.bold,
+    fontSize: 12,
+    paddingLeft: 4,
     color: colors.textMuted,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceRaised,
-    borderRadius: 14,
+    backgroundColor: colors.background,
+    borderRadius: 999,
     overflow: 'hidden',
   },
   stepButton: {
-    width: 48,
+    width: 42,
     height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  stepSymbol: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 24,
-    color: colors.accent,
   },
   input: {
     flex: 1,
     minWidth: 0,
     height: 56,
     textAlign: 'center',
-    fontFamily: fonts.serif,
-    fontSize: 24,
+    fontFamily: fonts.display,
+    fontSize: 20,
     color: colors.text,
     fontVariant: ['tabular-nums'],
   },
