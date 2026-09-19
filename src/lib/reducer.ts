@@ -3,12 +3,13 @@ import type { AppState, Unit, Workout } from './types';
 
 export type Action =
   | { type: 'startWorkout'; id: string; now: number }
-  | { type: 'cancelWorkout' }
   | { type: 'finishWorkout'; now: number }
-  | { type: 'addExercise'; id: string; name: string }
-  | { type: 'removeExercise'; entryId: string }
-  | { type: 'addSet'; entryId: string; id: string; reps: number; weightKg: number }
-  | { type: 'removeSet'; entryId: string; setId: string }
+  | { type: 'deleteWorkout'; workoutId: string }
+  | { type: 'tidyWorkout'; workoutId: string }
+  | { type: 'addExercise'; workoutId: string; id: string; name: string }
+  | { type: 'removeExercise'; workoutId: string; entryId: string }
+  | { type: 'addSet'; workoutId: string; entryId: string; id: string; reps: number; weightKg: number }
+  | { type: 'removeSet'; workoutId: string; entryId: string; setId: string }
   | { type: 'setUnit'; unit: Unit };
 
 export const initialState: AppState = {
@@ -19,11 +20,20 @@ export const initialState: AppState = {
   activeWorkoutId: null,
 };
 
-function updateActive(state: AppState, update: (workout: Workout) => Workout): AppState {
+function updateWorkout(state: AppState, id: string, update: (workout: Workout) => Workout): AppState {
   return {
     ...state,
-    workouts: state.workouts.map((w) => (w.id === state.activeWorkoutId ? update(w) : w)),
+    workouts: state.workouts.map((w) => (w.id === id ? update(w) : w)),
   };
+}
+
+// Drops exercises with no sets; a workout with nothing logged isn't worth keeping in history.
+function tidy(state: AppState, id: string): AppState {
+  const workout = state.workouts.find((w) => w.id === id);
+  if (!workout) return state;
+  const exercises = workout.exercises.filter((e) => e.sets.length > 0);
+  if (exercises.length === 0) return reducer(state, { type: 'deleteWorkout', workoutId: id });
+  return updateWorkout(state, id, (w) => ({ ...w, exercises }));
 }
 
 export function reducer(state: AppState, action: Action): AppState {
@@ -34,31 +44,30 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, workouts: [...state.workouts, workout], activeWorkoutId: workout.id };
     }
 
-    case 'cancelWorkout':
+    case 'deleteWorkout':
       return {
         ...state,
-        workouts: state.workouts.filter((w) => w.id !== state.activeWorkoutId),
-        activeWorkoutId: null,
+        workouts: state.workouts.filter((w) => w.id !== action.workoutId),
+        activeWorkoutId: state.activeWorkoutId === action.workoutId ? null : state.activeWorkoutId,
       };
 
     case 'finishWorkout': {
-      const active = state.workouts.find((w) => w.id === state.activeWorkoutId);
-      if (!active) return state;
-      const exercises = active.exercises.filter((e) => e.sets.length > 0);
-      // A workout with nothing logged isn't worth keeping in history.
-      if (exercises.length === 0) return reducer(state, { type: 'cancelWorkout' });
-      return {
-        ...updateActive(state, (w) => ({ ...w, exercises, endedAt: action.now })),
-        activeWorkoutId: null,
-      };
+      const id = state.activeWorkoutId;
+      if (!id) return state;
+      const finished = { ...updateWorkout(state, id, (w) => ({ ...w, endedAt: action.now })), activeWorkoutId: null };
+      return tidy(finished, id);
     }
+
+    case 'tidyWorkout':
+      // The active workout keeps its empty exercises until it's finished.
+      return action.workoutId === state.activeWorkoutId ? state : tidy(state, action.workoutId);
 
     case 'addExercise': {
       const typed = action.name.trim();
-      if (!typed || !state.activeWorkoutId) return state;
+      if (!typed || !state.workouts.some((w) => w.id === action.workoutId)) return state;
       const name = state.exerciseNames.find((n) => sameName(n, typed)) ?? typed;
       const exerciseNames = [name, ...state.exerciseNames.filter((n) => !sameName(n, name))];
-      return updateActive({ ...state, exerciseNames }, (w) =>
+      return updateWorkout({ ...state, exerciseNames }, action.workoutId, (w) =>
         w.exercises.some((e) => sameName(e.name, name))
           ? w
           : { ...w, exercises: [...w.exercises, { id: action.id, name, sets: [] }] },
@@ -66,13 +75,13 @@ export function reducer(state: AppState, action: Action): AppState {
     }
 
     case 'removeExercise':
-      return updateActive(state, (w) => ({
+      return updateWorkout(state, action.workoutId, (w) => ({
         ...w,
         exercises: w.exercises.filter((e) => e.id !== action.entryId),
       }));
 
     case 'addSet':
-      return updateActive(state, (w) => ({
+      return updateWorkout(state, action.workoutId, (w) => ({
         ...w,
         exercises: w.exercises.map((e) =>
           e.id === action.entryId
@@ -82,7 +91,7 @@ export function reducer(state: AppState, action: Action): AppState {
       }));
 
     case 'removeSet':
-      return updateActive(state, (w) => ({
+      return updateWorkout(state, action.workoutId, (w) => ({
         ...w,
         exercises: w.exercises.map((e) =>
           e.id === action.entryId ? { ...e, sets: e.sets.filter((s) => s.id !== action.setId) } : e,

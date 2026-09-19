@@ -4,8 +4,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { bestSet, compareSets, previousSession } from '../lib/progress';
 import { newId, useStore } from '../lib/store';
 import type { ExerciseEntry, Unit } from '../lib/types';
-import { defaultWeight, formatWeight, fromKg, roundTo, toKg, weightStep } from '../lib/units';
+import { formatWeight, fromKg, roundTo, toKg, weightStep } from '../lib/units';
 import { colors, fonts } from '../theme';
+import { Icon } from './Icon';
 import { Stepper } from './Stepper';
 import { Button, TrendBadge } from './ui';
 
@@ -19,7 +20,9 @@ type Props = {
 export function ExerciseCard({ entry, workoutId, expanded, onExpand }: Props) {
   const { state, dispatch } = useStore();
   const { unit } = state;
-  const previous = previousSession(state.workouts, entry.name, { excludeId: workoutId });
+  // A past workout compares against sessions before it, not ones logged since.
+  const endedAt = state.workouts.find((w) => w.id === workoutId)?.endedAt ?? undefined;
+  const previous = previousSession(state.workouts, entry.name, { excludeId: workoutId, before: endedAt });
   const trend = compareSets(entry.sets, previous?.sets ?? null);
   const previousBest = previous ? bestSet(previous.sets) : null;
 
@@ -27,7 +30,7 @@ export function ExerciseCard({ entry, workoutId, expanded, onExpand }: Props) {
     const seed = entry.sets.at(-1) ?? previous?.sets.at(-1);
     return {
       reps: seed?.reps ?? 8,
-      weight: seed ? roundTo(fromKg(seed.weightKg, unit), 0.1) : defaultWeight(unit),
+      weight: seed ? roundTo(fromKg(seed.weightKg, unit), 0.1) : 0,
     };
   });
 
@@ -42,6 +45,7 @@ export function ExerciseCard({ entry, workoutId, expanded, onExpand }: Props) {
   function addSet() {
     dispatch({
       type: 'addSet',
+      workoutId,
       entryId: entry.id,
       id: newId(),
       reps: draft.reps,
@@ -77,11 +81,11 @@ export function ExerciseCard({ entry, workoutId, expanded, onExpand }: Props) {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Remove set ${i + 1}`}
-                  onPress={() => dispatch({ type: 'removeSet', entryId: entry.id, setId: set.id })}
+                  onPress={() => dispatch({ type: 'removeSet', workoutId, entryId: entry.id, setId: set.id })}
                   hitSlop={12}
                   style={({ pressed }) => [styles.remove, pressed && { opacity: 0.5 }]}
                 >
-                  <Text style={styles.removeLabel}>×</Text>
+                  <Icon name="delete" size={18} color={colors.textFaint} />
                 </Pressable>
               )}
             </View>
@@ -111,7 +115,7 @@ export function ExerciseCard({ entry, workoutId, expanded, onExpand }: Props) {
             <Button
               label="Remove exercise"
               variant="ghost"
-              onPress={() => dispatch({ type: 'removeExercise', entryId: entry.id })}
+              onPress={() => dispatch({ type: 'removeExercise', workoutId, entryId: entry.id })}
             />
           )}
         </View>
@@ -123,13 +127,14 @@ export function ExerciseCard({ entry, workoutId, expanded, onExpand }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 20,
-    padding: 16,
-    gap: 12,
+    borderRadius: 28,
+    padding: 18,
+    gap: 14,
+    borderWidth: 2,
+    borderColor: colors.surface,
   },
   cardExpanded: {
     borderColor: colors.border,
-    borderWidth: 1,
   },
   header: {
     flexDirection: 'row',
@@ -141,8 +146,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   name: {
-    fontFamily: fonts.serif,
-    fontSize: 22,
+    fontFamily: fonts.display,
+    fontSize: 20,
     color: colors.text,
   },
   reference: {
@@ -152,13 +157,20 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   setCount: {
-    fontFamily: fonts.serif,
-    fontSize: 22,
-    color: colors.textMuted,
+    minWidth: 32,
+    height: 32,
+    borderRadius: 16,
+    overflow: 'hidden',
+    textAlign: 'center',
+    lineHeight: 32,
+    backgroundColor: colors.surfaceRaised,
+    fontFamily: fonts.display,
+    fontSize: 15,
+    color: colors.accentPressed,
     fontVariant: ['tabular-nums'],
   },
   sets: {
-    gap: 2,
+    gap: 4,
   },
   setRow: {
     flexDirection: 'row',
@@ -167,15 +179,21 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   setIndex: {
-    width: 20,
-    fontFamily: fonts.bodyMedium,
-    fontSize: 14,
-    color: colors.textFaint,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    overflow: 'hidden',
+    textAlign: 'center',
+    lineHeight: 24,
+    backgroundColor: colors.surfaceRaised,
+    fontFamily: fonts.bold,
+    fontSize: 12,
+    color: colors.accentPressed,
     fontVariant: ['tabular-nums'],
   },
   setValue: {
     flex: 1,
-    fontFamily: fonts.bodyMedium,
+    fontFamily: fonts.bold,
     fontSize: 17,
     color: colors.text,
     fontVariant: ['tabular-nums'],
@@ -185,10 +203,6 @@ const styles = StyleSheet.create({
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  removeLabel: {
-    fontSize: 22,
-    color: colors.textFaint,
   },
   entry: {
     gap: 12,

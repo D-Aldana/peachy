@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -21,14 +21,26 @@ import { colors, fonts } from '../theme';
 
 export default function WorkoutScreen() {
   const { state, dispatch } = useStore();
-  const workout = useActiveWorkout();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const active = useActiveWorkout();
+  const workout = id ? (state.workouts.find((w) => w.id === id) ?? null) : active;
+  const isPast = workout?.endedAt != null;
   const [name, setName] = useState('');
-  const [expandedId, setExpandedId] = useState<string | null>(() => workout?.exercises.at(-1)?.id ?? null);
+  const [expandedId, setExpandedId] = useState<string | null>(() =>
+    isPast ? null : (workout?.exercises.at(-1)?.id ?? null),
+  );
+
+  // Past workouts are saved as you edit; clear out anything left empty on the way out.
+  const workoutId = workout?.id;
+  useEffect(() => {
+    if (!workoutId) return;
+    return () => dispatch({ type: 'tidyWorkout', workoutId });
+  }, [workoutId]);
 
   if (!workout) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyText}>No workout in progress.</Text>
+        <Text style={styles.emptyText}>{id ? 'This workout no longer exists.' : 'No workout in progress.'}</Text>
         <Button label="Back home" variant="secondary" onPress={() => router.back()} />
       </View>
     );
@@ -45,7 +57,7 @@ export default function WorkoutScreen() {
     if (!input.trim()) return;
     const existing = workout!.exercises.find((e) => sameName(e.name, input));
     const id = existing?.id ?? newId();
-    if (!existing) dispatch({ type: 'addExercise', id, name: input });
+    if (!existing) dispatch({ type: 'addExercise', workoutId: workout!.id, id, name: input });
     setExpandedId(id);
     setName('');
   }
@@ -55,24 +67,26 @@ export default function WorkoutScreen() {
     router.back();
   }
 
-  function cancel() {
-    const discard = () => {
-      dispatch({ type: 'cancelWorkout' });
+  function discard() {
+    const remove = () => {
+      dispatch({ type: 'deleteWorkout', workoutId: workout!.id });
       router.back();
     };
+    const title = isPast ? 'Delete workout?' : 'Discard workout?';
     const message = 'This workout and its sets will be deleted.';
     if (Platform.OS === 'web') {
-      if (window.confirm(`Discard workout? ${message}`)) discard();
+      if (window.confirm(`${title} ${message}`)) remove();
       return;
     }
-    Alert.alert('Discard workout?', message, [
-      { text: 'Keep going', style: 'cancel' },
-      { text: 'Discard', style: 'destructive', onPress: discard },
+    Alert.alert(title, message, [
+      { text: isPast ? 'Keep it' : 'Keep going', style: 'cancel' },
+      { text: isPast ? 'Delete' : 'Discard', style: 'destructive', onPress: remove },
     ]);
   }
 
   return (
     <SafeAreaView style={styles.safe} edges={['bottom', 'left', 'right']}>
+      {isPast && <Stack.Screen options={{ title: formatDate(workout.endedAt!) }} />}
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -91,7 +105,7 @@ export default function WorkoutScreen() {
 
           <View style={styles.addSection}>
             <Text style={styles.addLabel}>
-              {workout.exercises.length === 0 ? 'What are you starting with?' : 'Next exercise'}
+              {isPast ? 'Add an exercise' : workout.exercises.length === 0 ? 'What are you starting with?' : 'Next exercise'}
             </Text>
             <View style={styles.inputRow}>
               <TextInput
@@ -115,7 +129,7 @@ export default function WorkoutScreen() {
                     key={s}
                     accessibilityRole="button"
                     onPress={() => addExercise(s)}
-                    style={({ pressed }) => [styles.chip, pressed && { backgroundColor: colors.border }]}
+                    style={({ pressed }) => [styles.chip, pressed && { backgroundColor: colors.surfaceRaised }]}
                   >
                     <Text style={styles.chipLabel}>{s}</Text>
                   </Pressable>
@@ -126,12 +140,20 @@ export default function WorkoutScreen() {
         </ScrollView>
 
         <View style={styles.footer}>
-          <Button label="Cancel" variant="ghost" onPress={cancel} style={styles.cancel} />
-          <Button label="Finish workout" onPress={finish} style={styles.flex} />
+          <Button label={isPast ? 'Delete' : 'Cancel'} variant="ghost" onPress={discard} style={styles.cancel} />
+          {isPast ? (
+            <Button label="Done" variant="secondary" onPress={() => router.back()} style={styles.flex} />
+          ) : (
+            <Button label="Finish workout" variant="secondary" onPress={finish} style={styles.flex} />
+          )}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
+}
+
+function formatDate(ms: number): string {
+  return new Date(ms).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
 const styles = StyleSheet.create({
@@ -143,7 +165,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
+    padding: 20,
     gap: 12,
   },
   empty: {
@@ -164,8 +186,8 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   addLabel: {
-    fontFamily: fonts.serif,
-    fontSize: 20,
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.text,
   },
   inputRow: {
@@ -175,8 +197,8 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     minHeight: 56,
-    borderRadius: 16,
-    paddingHorizontal: 16,
+    borderRadius: 999,
+    paddingHorizontal: 20,
     backgroundColor: colors.surface,
     color: colors.text,
     fontFamily: fonts.body,
@@ -191,7 +213,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -204,11 +228,9 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     gap: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 8,
-    borderTopColor: colors.surface,
-    borderTopWidth: StyleSheet.hairlineWidth,
   },
   cancel: {
     paddingHorizontal: 16,

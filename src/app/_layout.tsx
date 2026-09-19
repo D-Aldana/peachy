@@ -1,10 +1,10 @@
 import {
-  Fraunces_400Regular,
-  Fraunces_600SemiBold,
-  Fraunces_700Bold_Italic,
+  MPLUSRounded1c_400Regular,
+  MPLUSRounded1c_500Medium,
+  MPLUSRounded1c_700Bold,
+  MPLUSRounded1c_800ExtraBold,
   useFonts,
-} from '@expo-google-fonts/fraunces';
-import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
+} from '@expo-google-fonts/m-plus-rounded-1c';
 import { SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -16,12 +16,10 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    Fraunces_400Regular,
-    Fraunces_600SemiBold,
-    Fraunces_700Bold_Italic,
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
+    MPLUSRounded1c_400Regular,
+    MPLUSRounded1c_500Medium,
+    MPLUSRounded1c_700Bold,
+    MPLUSRounded1c_800ExtraBold,
   });
 
   useEffect(() => {
@@ -32,12 +30,13 @@ export default function RootLayout() {
 
   return (
     <StoreProvider>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.accent,
-          headerTitleStyle: { fontFamily: fonts.serif, color: colors.text },
+          headerTintColor: colors.accentPressed,
+          headerTitleStyle: { fontFamily: fonts.display, color: colors.text },
+          headerBackTitleStyle: { fontFamily: fonts.bodyMedium },
           headerShadowVisible: false,
           contentStyle: { backgroundColor: colors.background },
         }}

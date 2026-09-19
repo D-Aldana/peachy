@@ -22,6 +22,8 @@ export type WeekSummary = {
   workoutCount: number;
   totalSets: number;
   totalVolumeKg: number;
+  /** Monday-first; true where a workout was finished that day. */
+  days: boolean[];
   exercises: ExerciseWeekSummary[];
 };
 
@@ -66,5 +68,8 @@ export function summarizeWeek(workouts: Workout[], now = new Date()): WeekSummar
     };
   });
 
-  return { start, end, workoutCount: inWeek.length, totalSets, totalVolumeKg, exercises };
+  const days = Array.from({ length: 7 }, () => false);
+  for (const workout of inWeek) days[(new Date(workout.endedAt!).getDay() + 6) % 7] = true;
+
+  return { start, end, workoutCount: inWeek.length, totalSets, totalVolumeKg, days, exercises };
 }

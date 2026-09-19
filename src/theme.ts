@@ -1,31 +1,30 @@
 import type { Trend } from './lib/types';
 
 export const colors = {
-  background: '#24161F',
-  surface: '#33212C',
-  surfaceRaised: '#422B39',
-  border: '#553A4A',
-  text: '#FBEDE6',
-  textMuted: '#BFA3AF',
-  textFaint: '#8A6E7B',
-  accent: '#FF9B7D',
-  accentPressed: '#F07F5F',
-  onAccent: '#2A1520',
-  danger: '#F2A0A8',
+  background: '#FFF1EC',
+  surface: '#FFFFFF',
+  surfaceRaised: '#FFE4DA',
+  border: '#F6D3C7',
+  text: '#3A2330',
+  textMuted: '#8E6C77',
+  textFaint: '#C4A5AE',
+  accent: '#FF9270',
+  accentPressed: '#F57B57',
+  onAccent: '#3A2330',
+  leaf: '#7DB37C',
+  danger: '#D9607A',
 };
 
 export const fonts = {
-  serif: 'Fraunces_600SemiBold',
-  serifItalic: 'Fraunces_700Bold_Italic',
-  serifRegular: 'Fraunces_400Regular',
-  body: 'Inter_400Regular',
-  bodyMedium: 'Inter_500Medium',
-  bodySemiBold: 'Inter_600SemiBold',
+  display: 'MPLUSRounded1c_800ExtraBold',
+  bold: 'MPLUSRounded1c_700Bold',
+  body: 'MPLUSRounded1c_400Regular',
+  bodyMedium: 'MPLUSRounded1c_500Medium',
 };
 
 export const trendStyles: Record<Trend, { label: string; color: string; background: string }> = {
-  up: { label: 'Up on last time', color: '#BDE8C0', background: '#2F4A36' },
-  even: { label: 'Even with last time', color: '#F2D6B8', background: '#4A3A2E' },
-  down: { label: 'Down on last time', color: '#F2C2C8', background: '#4D2F3B' },
+  up: { label: 'Up on last time', color: '#3F7A45', background: '#E4F3E0' },
+  even: { label: 'Even with last time', color: '#8A6420', background: '#FFF1CC' },
+  down: { label: 'Down on last time', color: '#A8465C', background: '#FFE1E6' },
   first: { label: 'First time', color: colors.textMuted, background: colors.surfaceRaised },
 };

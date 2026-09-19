@@ -2,7 +2,8 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, Stat, UnitToggle } from '../components/ui';
+import { Peach } from '../components/Icon';
+import { Button, Stat, UnitToggle, WeekPeaches } from '../components/ui';
 import { newId, useActiveWorkout, useStore } from '../lib/store';
 import { formatNumber, fromKg } from '../lib/units';
 import { summarizeWeek } from '../lib/week';
@@ -28,7 +29,10 @@ export default function Home() {
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.topBar}>
-          <Text style={styles.wordmark}>Peachy</Text>
+          <View style={styles.brand}>
+            <Peach size={22} />
+            <Text style={styles.wordmark}>peachy</Text>
+          </View>
           <UnitToggle />
         </View>
 
@@ -45,12 +49,14 @@ export default function Home() {
         <Pressable
           accessibilityRole="button"
           onPress={() => router.push('/summary')}
-          style={({ pressed }) => [styles.card, pressed && { backgroundColor: colors.surfaceRaised }]}
+          style={({ pressed }) => [styles.card, pressed && { transform: [{ scale: 0.98 }] }]}
         >
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>This week</Text>
             <Text style={styles.cardLink}>Summary ›</Text>
           </View>
+          <WeekPeaches days={week.days} />
+          <View style={styles.divider} />
           <View style={styles.stats}>
             <Stat label="workouts" value={String(week.workoutCount)} />
             <Stat label="sets" value={String(week.totalSets)} />
@@ -65,12 +71,19 @@ export default function Home() {
           <View style={styles.recent}>
             <Text style={styles.sectionTitle}>Recent</Text>
             {recent.map((w) => (
-              <View key={w.id} style={styles.recentRow}>
+              <Pressable
+                key={w.id}
+                accessibilityRole="button"
+                accessibilityHint="Opens this workout to edit"
+                onPress={() => router.push({ pathname: '/workout', params: { id: w.id } })}
+                style={({ pressed }) => [styles.recentRow, pressed && { backgroundColor: colors.surfaceRaised }]}
+              >
                 <Text style={styles.recentDate}>{formatDate(w.endedAt!)}</Text>
                 <Text style={styles.recentExercises} numberOfLines={1}>
                   {w.exercises.map((e) => e.name).join(', ')}
                 </Text>
-              </View>
+                <Text style={styles.recentChevron}>›</Text>
+              </Pressable>
             ))}
           </View>
         )}
@@ -93,39 +106,50 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    padding: 20,
-    gap: 20,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 32,
+    gap: 24,
   },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  brand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   wordmark: {
-    fontFamily: fonts.serifItalic,
-    fontSize: 36,
-    color: colors.accent,
+    fontFamily: fonts.display,
+    fontSize: 26,
+    letterSpacing: -0.5,
+    color: colors.text,
   },
   hero: {
-    gap: 8,
-    paddingVertical: 12,
+    gap: 6,
+    paddingTop: 16,
   },
   heroTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 30,
+    fontFamily: fonts.display,
+    fontSize: 32,
+    lineHeight: 40,
+    letterSpacing: -0.5,
     color: colors.text,
   },
   heroBody: {
     fontFamily: fonts.body,
     fontSize: 16,
+    lineHeight: 24,
     color: colors.textMuted,
-    marginBottom: 12,
+    marginBottom: 18,
   },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 20,
-    padding: 18,
-    gap: 16,
+    borderRadius: 28,
+    padding: 20,
+    gap: 18,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -133,45 +157,56 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   cardTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 20,
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.text,
   },
   cardLink: {
-    fontFamily: fonts.bodyMedium,
+    fontFamily: fonts.bold,
     fontSize: 14,
-    color: colors.accent,
+    color: colors.accentPressed,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.background,
   },
   stats: {
     flexDirection: 'row',
     gap: 12,
   },
   recent: {
-    gap: 4,
+    gap: 8,
   },
   sectionTitle: {
-    fontFamily: fonts.serif,
-    fontSize: 20,
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.text,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   recentRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
-    paddingVertical: 10,
-    borderBottomColor: colors.surface,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
   },
   recentDate: {
-    width: 96,
-    fontFamily: fonts.bodyMedium,
-    fontSize: 14,
+    width: 92,
+    fontFamily: fonts.bold,
+    fontSize: 13,
     color: colors.textMuted,
   },
   recentExercises: {
     flex: 1,
-    fontFamily: fonts.body,
+    fontFamily: fonts.bodyMedium,
     fontSize: 14,
     color: colors.text,
+  },
+  recentChevron: {
+    fontFamily: fonts.bold,
+    fontSize: 18,
+    color: colors.textFaint,
   },
 });
