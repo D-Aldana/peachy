@@ -72,7 +72,7 @@ No analytics/telemetry exist in the current build (see Non-Goals) — these metr
 **6. View weekly summary**
 
 - From the home screen, user opens the weekly summary
-- Sees: workouts completed this week, total sets, total volume, and a per-exercise breakdown showing whether performance this week is up, down, or flat versus the last time before this week each exercise was performed
+- Sees: workouts completed this week, total sets, week streak, and a per-exercise breakdown showing whether performance this week is up, down, or flat versus the last time before this week each exercise was performed
 
 ## Feature Requirements (MVP)
 
@@ -105,7 +105,7 @@ No analytics/telemetry exist in the current build (see Non-Goals) — these metr
 **Weekly summary**
 
 - Aggregates all workouts completed within the current calendar week (Monday–Sunday)
-- Shows: workout count, total sets, total volume
+- Shows: workout count, total sets, week streak — consecutive calendar weeks with at least one finished workout; the current week doesn't break the streak until it ends
 - Per exercise trained that week: total sets, best set, and an up/down/even badge compared to the last session of that exercise before the week started
 
 **Persistence**

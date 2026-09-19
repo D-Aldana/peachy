@@ -1,8 +1,8 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Stat, TrendBadge, WeekPeaches } from '../components/ui';
+import { Stat, StreakStat, TrendBadge, WeekPeaches } from '../components/ui';
 import { useStore } from '../lib/store';
-import { formatNumber, formatWeight, fromKg } from '../lib/units';
+import { formatWeight } from '../lib/units';
 import { summarizeWeek } from '../lib/week';
 import { colors, fonts } from '../theme';
 
@@ -24,7 +24,7 @@ export default function Summary() {
         <View style={styles.stats}>
           <Stat label="workouts" value={String(week.workoutCount)} />
           <Stat label="sets" value={String(week.totalSets)} />
-          <Stat label={`${unit} volume`} value={formatNumber(fromKg(week.totalVolumeKg, unit), 0)} />
+          <StreakStat weeks={week.streak} />
         </View>
       </View>
 
