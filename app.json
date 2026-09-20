@@ -8,9 +8,13 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.d-aldana.peachy"
+      "bundleIdentifier": "com.peachy.builtbydustin",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.peachy.builtbydustin",
       "adaptiveIcon": {
         "backgroundColor": "#FFF1EC",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -38,6 +42,13 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "owner": "d-aldana",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4fd978f8-027b-4df2-b7aa-c28aa8231257"
+      }
     }
   }
 }
